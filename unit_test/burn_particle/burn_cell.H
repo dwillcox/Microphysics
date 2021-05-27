@@ -124,7 +124,6 @@ void burn_cell_c()
     // normalize -- just in case
     normalize_abundances_burn(state);
 
-    // output initial burn type data
     Real time = tr.time[0];
 
     // call the EOS to set initial e -- it actually doesn't matter to
@@ -167,14 +166,21 @@ void burn_cell_c()
 
     for (int n = 0; n < tr.length - 1; n++){
 
-        // compute the time we wish to integrate to
+        // compute the integration timestep for this step
+
         Real dt = tr.time[n+1] - tr.time[n];
 
-        // Do the burn for dt
+        // set the temperature and density by time-centering
+        // them for this step of the trajectory
+
+        state.T = 0.5_rt * (tr.temperature[n] + tr.temperature[n+1]);
+        state.rho = 0.5_rt * (tr.density[n] + tr.density[n+1]);
+
+        // do the burn for dt, with the existing composition
     	burner(state, dt);
 
         // state.e represents the change in energy over the burn (for
-        // just this sybcycle), so turn it back into a physical energy
+        // just this subcycle), so turn it back into a physical energy
 
         state.e += energy_initial;
 
